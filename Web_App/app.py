@@ -92,53 +92,7 @@ st.markdown("""
 
 /* ====== 🚀 降维打击版：强行撕裂 Streamlit 的外层限制 ====== */
     
-    /* 1. 掐住最外层脖子，强制其内部元素拉伸填满 */
-    div[data-testid="stRadio"] {
-        width: 100% !important;
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: stretch !important; /* 核心魔法：强制里面的东西拉伸到和列一样宽 */
-    }
-
-    /* 2. 中间可能存在的隐形包裹层，统统解除限制 */
-    div[data-testid="stRadio"] > div {
-        width: 100% !important;
-        max-width: 100% !important;
-        display: block !important;
-    }
-
-    /* 3. 目标实体：白色背景卡片 */
-    div[role="radiogroup"] {
-        width: 100% !important; 
-        height: 100px !important; /* 与右侧输入框等高 */
-        border-radius: 15px !important; 
-        background-color: white !important;
-        box-shadow: 0 8px 16px rgba(0,0,0,0.08) !important; 
-        border: 2px solid #e0e0e0 !important; 
-        
-        /* 内部排版 */
-        display: flex !important; 
-        flex-direction: row !important;
-        align-items: center !important; 
-        justify-content: space-between !important; 
-        padding: 0 15px !important; 
-        box-sizing: border-box !important;
-    }
-    
-    div[role="radiogroup"]:hover {
-        border-color: #4b6cb7 !important; 
-        box-shadow: 0 12px 24px rgba(75, 108, 183, 0.2) !important;
-    }
-
-    /* 4. 内部选项均分地盘 */
-    div[role="radiogroup"] > label {
-        flex: 1 !important; /* 绝对平分 */
-        display: flex !important; 
-        justify-content: center !important; 
-        align-items: center !important;
-        margin: 0 !important; 
-        padding: 0 !important;
-    }
+   
 
     /* 5. 放大单选小圆圈 */
     div[role="radiogroup"] > label > div:first-child {
@@ -355,6 +309,7 @@ if st.session_state['prediction_result'] is not None:
         </div>
     </div>
     """, unsafe_allow_html=True)
+
 
 
 
