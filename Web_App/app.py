@@ -101,7 +101,7 @@ st.markdown("""
 
     /* 2. 目标实体：白色背景框 (Card UI) */
     div[role="radiogroup"] {
-        width: 600px !important; 
+        width: 1000px !important; 
         min-width: 100% !important; 
         height: 100px !important; /* 强制与右侧数字输入框等高 */
         border-radius: 15px !important; 
@@ -349,6 +349,7 @@ if st.session_state['prediction_result'] is not None:
         </div>
     </div>
     """, unsafe_allow_html=True)
+
 
 
 
