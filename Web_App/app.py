@@ -69,7 +69,7 @@ st.markdown("""
         filter: drop-shadow(3px 3px 5px rgba(38, 85, 123, 0.2));
     }
 
-    /* === 输入框与标签 (增加了对 Radio 标题的适配) === */
+    /* === 输入框与标签 === */
     .stSelectbox label, .stNumberInput label, .stRadio > label {
         display: flex !important; justify-content: center !important; align-items: center !important; width: 100% !important; margin-bottom: 12px !important;
     }
@@ -90,15 +90,16 @@ st.markdown("""
     div[data-testid="stNumberInput"] button { display: none !important; }
     input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 
-    /* === 单选框 (Radio) 强制满宽 & 不换行 & 卡片化样式 === */
+    /* === 单选框 (Radio) 在1:1布局下的极限自适应样式 === */
     div[data-testid="stRadio"], div[data-testid="stRadio"] > div {
-        width: 100% !important; /* 强制外层容器撑满 */
+        width: 100% !important;
     }
     div[role="radiogroup"] {
-        width: 100% !important; /* 强制内部框撑满 */
+        width: 100% !important;
         height: 100px !important; min-height: 100px !important; border-radius: 15px !important; background-color: white !important;
         box-shadow: 0 8px 16px rgba(0,0,0,0.08) !important; border: 2px solid #e0e0e0 !important; transition: all 0.3s !important;
-        display: flex !important; align-items: center !important; justify-content: space-around !important; padding: 0 20px !important;
+        display: flex !important; align-items: center !important; justify-content: space-evenly !important; 
+        padding: 0 5px !important; /* 缩小内部边距，腾出空间 */
     }
     div[role="radiogroup"]:hover {
         border-color: #4b6cb7 !important; box-shadow: 0 12px 24px rgba(75, 108, 183, 0.2) !important;
@@ -107,11 +108,11 @@ st.markdown("""
         cursor: pointer !important; margin: 0 !important; flex: 1 !important; display: flex !important; justify-content: center !important;
     }
     div[role="radiogroup"] label p {
-        font-size: 2.2rem !important; /* 字体放大 */
+        font-size: 1.6rem !important; /* 👈 核心修改：缩放字体以完美匹配 50% 屏幕宽度 */
         font-weight: 600 !important;
         color: #333 !important;
-        margin-left: 10px !important;
-        white-space: nowrap !important; /* 👈 核心修改：绝对禁止文字换行 */
+        margin-left: 5px !important;
+        white-space: nowrap !important; /* 👈 核心防御：绝对禁止换行 */
     }
 
     /* === 按钮 === */
@@ -189,8 +190,8 @@ with col_center:
 st.write("")
 
 # --- 输入区 ---
-# 【核心修改点】：这里将列的比例改为了 2:1，左边占 2/3，右边占 1/3。长度直接翻倍！
-r1_c1, r1_c2 = st.columns([2, 1], gap="large")
+# 【核心修改点】：恢复 st.columns(2) 保证左右严格 1:1 绝对平分！
+r1_c1, r1_c2 = st.columns(2, gap="large")
 with r1_c1:
     clay_options = ["Montmorillonite", "Black Talc", "Attapulgite"]
     clay_type = st.radio("Clay Mineral Type", clay_options, horizontal=True)
@@ -199,12 +200,13 @@ with r1_c2:
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-op_c1, op_c2, op_c3 = st.columns(3, gap="large")
-with op_c1:
+# 恢复底部完美的对称布局
+r2_c1, r2_c2, r2_c3 = st.columns(3, gap="large")
+with r2_c1:
     temp = st.number_input("Temperature (°C)", value=30.0, step=1.0, format="%.0f")
-with op_c2:
+with r2_c2:
     sl_ratio = st.number_input("S/L Ratio (g/mL)", value=20.0, step=1.0, format="%.0f")
-with op_c3:
+with r2_c3:
     time_val = st.number_input("Reaction Time (h)", value=5.0, step=0.5, format="%.2f")
 
 st.markdown("<br>", unsafe_allow_html=True)
