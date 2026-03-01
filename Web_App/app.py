@@ -35,7 +35,7 @@ def set_bg_local(image_file):
     )
 
 
-bg_path = "background.png"
+bg_path = "Web_App/background.png"
 try:
     set_bg_local(bg_path)
 except FileNotFoundError:
@@ -119,7 +119,7 @@ st.markdown("""
 
 # ==================== 4. 智能加载所有模型与配置 ====================
 # 设置模型文件夹路径 (请确保路径与训练脚本输出的路径完全一致)
-MODEL_DIR = "."
+MODEL_DIR = "Web_App"
 
 # --- A. 初始化容器 ---
 models = {
@@ -162,7 +162,7 @@ try:
 except Exception:
     pass
 # ==================== 5. 界面布局 ====================
-logo_path = "images.png"
+logo_path = "Web_App/images.png"
 col_left, col_center, col_right = st.columns([1, 4, 1])
 
 with col_left:
@@ -332,4 +332,5 @@ if st.session_state['prediction_result'] is not None:
              <div class="res-unit" style="font-size:1.2rem; color:#666;">{src}</div>
         </div>
     </div>
+
     """, unsafe_allow_html=True)
