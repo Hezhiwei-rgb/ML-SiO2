@@ -90,18 +90,18 @@ st.markdown("""
     div[data-testid="stNumberInput"] button { display: none !important; }
     input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 
-   /* ====== 🚀 单选框 (Radio) 终极核弹级强制拉伸 ====== */
-    /* 1. 强制击穿所有层级的父容器，全设为 100% 宽度 */
+  /* ====== 🚀 修复版：单选框 (Radio) 强制拉伸 ====== */
+    /* 1. 强行解除包裹 stRadio 的所有父级宽度限制 */
     div[data-testid="stRadio"], 
-    div[data-testid="stRadio"] > div,
-    div[data-testid="stRadio"] > div > div {
+    div[data-testid="stRadio"] > div {
         width: 100% !important;
+        max-width: 100% !important;
     }
 
-    /* 2. 目标白色卡片实体，满宽且和旁边输入框等高 */
+    /* 2. 目标实体：白色背景框 */
     div[role="radiogroup"] {
         width: 100% !important; 
-        height: 100px !important; /* 强制与旁边的数字输入框等高 */
+        height: 100px !important; /* 与输入框等高 */
         border-radius: 15px !important; 
         background-color: white !important;
         box-shadow: 0 8px 16px rgba(0,0,0,0.08) !important; 
@@ -109,40 +109,35 @@ st.markdown("""
         display: flex !important; 
         flex-direction: row !important;
         align-items: center !important; 
-        justify-content: space-between !important; 
-        padding: 0 20px !important; 
-        box-sizing: border-box !important;
+        justify-content: space-evenly !important; /* 均匀分布 */
+        padding: 0 10px !important; 
+        gap: 10px !important; /* 选项之间的间距 */
     }
+    
     div[role="radiogroup"]:hover {
         border-color: #4b6cb7 !important; 
         box-shadow: 0 12px 24px rgba(75, 108, 183, 0.2) !important;
     }
 
-    /* 3. 让内部三个选项强制等宽均分，并居中 */
-    div[role="radiogroup"] label {
-        flex: 1 !important; 
+    /* 3. 内部选项 (label) 撑满等分空间 */
+    div[role="radiogroup"] > label {
+        flex: 1 1 0px !important; /* 核心：强制 flex 均分并允许伸缩 */
         display: flex !important; 
         justify-content: center !important; 
         align-items: center !important;
         height: 100% !important;
         margin: 0 !important; 
         padding: 0 !important;
-        cursor: pointer !important; 
+        background: transparent !important;
     }
 
-    /* 4. 放大字体，防止换行 */
-    div[role="radiogroup"] label p {
-        font-size: 2.2rem !important; /* 从 1.5rem 放大到 2.2rem，使其更饱满 */
+    /* 4. 调整文字防重叠 */
+    div[role="radiogroup"] > label p {
+        font-size: 1.6rem !important; /* 稍微缩小一点防止文字太长换行，之前是 2.2rem 可能太大 */
         font-weight: 600 !important;
         color: #333 !important;
-        margin-left: 10px !important;
-        white-space: nowrap !important;
-    }
-
-    /* 5. (可选) 稍微放大单选框前面的小圆圈 */
-    div[role="radiogroup"] div[data-baseweb="radio"] div {
-        height: 22px !important;
-        width: 22px !important;
+        margin-left: 8px !important;
+        white-space: nowrap !important; /* 强制不换行 */
     }
 
     /* === 按钮 === */
@@ -346,4 +341,5 @@ if st.session_state['prediction_result'] is not None:
         </div>
     </div>
     """, unsafe_allow_html=True)
+
 
