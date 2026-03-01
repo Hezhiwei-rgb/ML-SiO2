@@ -224,7 +224,7 @@ st.write("")
 
 # --- 输入区 ---
 # 左右 1:1 绝对平分
-r1_c1, r1_c2 = st.columns(2, gap="large")
+r1_c1, r1_c2 = st.columns([3, 2], gap="large")
 with r1_c1:
     clay_options = ["Montmorillonite", "Black Talc", "Attapulgite"]
     clay_type = st.radio("Clay Mineral Type", clay_options, horizontal=True)
@@ -349,6 +349,7 @@ if st.session_state['prediction_result'] is not None:
         </div>
     </div>
     """, unsafe_allow_html=True)
+
 
 
 
