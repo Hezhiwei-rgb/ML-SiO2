@@ -90,20 +90,24 @@ st.markdown("""
     div[data-testid="stNumberInput"] button { display: none !important; }
     input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 
-    /* === 单选框 (Radio) 卡片化样式 === */
+    /* === 单选框 (Radio) 强制满宽 & 卡片化样式 === */
+    div[data-testid="stRadio"] {
+        width: 100% !important; /* 强制外层容器撑满 100% */
+    }
     div[role="radiogroup"] {
+        width: 100% !important; /* 强制内部框撑满 100% */
         height: 100px !important; min-height: 100px !important; border-radius: 15px !important; background-color: white !important;
         box-shadow: 0 8px 16px rgba(0,0,0,0.08) !important; border: 2px solid #e0e0e0 !important; transition: all 0.3s !important;
-        display: flex !important; align-items: center !important; justify-content: space-evenly !important; padding: 0 10px !important;
+        display: flex !important; align-items: center !important; justify-content: space-between !important; padding: 0 20px !important;
     }
     div[role="radiogroup"]:hover {
         border-color: #4b6cb7 !important; box-shadow: 0 12px 24px rgba(75, 108, 183, 0.2) !important;
     }
     div[role="radiogroup"] label {
-        cursor: pointer !important; margin: 0 !important;
+        cursor: pointer !important; margin: 0 !important; flex: 1 !important; display: flex !important; justify-content: center !important;
     }
     div[role="radiogroup"] label p {
-        font-size: 1.8rem !important; /* 字体稍微缩放以并排容纳3个选项 */
+        font-size: 2.0rem !important; /* 字体稍微放大，撑满大框 */
         font-weight: 600 !important;
         color: #333 !important;
         margin-left: 8px !important;
@@ -187,7 +191,6 @@ st.write("")
 r1_c1, r1_c2 = st.columns(2, gap="large")
 with r1_c1:
     clay_options = ["Montmorillonite", "Black Talc", "Attapulgite"]
-    # 【核心修改点】：将 selectbox 替换为横向排布的 radio 单选按钮
     clay_type = st.radio("Clay Mineral Type", clay_options, horizontal=True)
 with r1_c2:
     particle_size = st.number_input("Particle Size (μm)", value=3.0, step=1.0, format="%.2f")
