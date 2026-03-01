@@ -90,18 +90,18 @@ st.markdown("""
     div[data-testid="stNumberInput"] button { display: none !important; }
     input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 
-  /* ====== 🚀 修复版：单选框 (Radio) 强制拉伸 ====== */
-    /* 1. 强行解除包裹 stRadio 的所有父级宽度限制 */
+  /* ====== 🚀 深度对齐版：单选框 (Radio) 完全视觉复刻 ====== */
+    /* 1. 强行解除包裹 stRadio 的所有父级宽度限制 (维持不变) */
     div[data-testid="stRadio"], 
     div[data-testid="stRadio"] > div {
         width: 100% !important;
         max-width: 100% !important;
     }
 
-    /* 2. 目标实体：白色背景框 */
+    /* 2. 目标实体：白色背景框 (Card UI) */
     div[role="radiogroup"] {
         width: 100% !important; 
-        height: 100px !important; /* 与输入框等高 */
+        height: 100px !important; /* 与输入框等高 (维持不变) */
         border-radius: 15px !important; 
         background-color: white !important;
         box-shadow: 0 8px 16px rgba(0,0,0,0.08) !important; 
@@ -109,9 +109,11 @@ st.markdown("""
         display: flex !important; 
         flex-direction: row !important;
         align-items: center !important; 
-        justify-content: space-evenly !important; /* 均匀分布 */
+        /* --- 关键修改点1：从均匀分布改为居中分布，模仿输入框对齐 --- */
+        justify-content: center !important; /* 将三个选项簇拥在中间 */
         padding: 0 10px !important; 
-        gap: 10px !important; /* 选项之间的间距 */
+        /* --- 关键修改点2：手动设定选项之间的合理间距 --- */
+        gap: 30px !important; /* 给选项之间留出更自然的空隙 */
     }
     
     div[role="radiogroup"]:hover {
@@ -119,9 +121,9 @@ st.markdown("""
         box-shadow: 0 12px 24px rgba(75, 108, 183, 0.2) !important;
     }
 
-    /* 3. 内部选项 (label) 撑满等分空间 */
+    /* 3. 内部选项 (label) 排版修正 */
     div[role="radiogroup"] > label {
-        flex: 1 1 0px !important; /* 核心：强制 flex 均分并允许伸缩 */
+        /* --- 关键修改点3：移除 flex: 1，允许选项根据自身文字长度自由伸缩 --- */
         display: flex !important; 
         justify-content: center !important; 
         align-items: center !important;
@@ -129,17 +131,19 @@ st.markdown("""
         margin: 0 !important; 
         padding: 0 !important;
         background: transparent !important;
+        /* --- 关键修改点4：放大单选圆圈 --- */
+        scale: 1.2; /* 让🔘小圆点也变大一点，和巨型字体更搭 */
     }
 
-    /* 4. 调整文字防重叠 */
+    /* 4. 彻底复刻：把文字放大成和数字一样的巨型字体 */
     div[role="radiogroup"] > label p {
-        font-size: 1.6rem !important; /* 稍微缩小一点防止文字太长换行，之前是 2.2rem 可能太大 */
-        font-weight: 600 !important;
+        /* --- 关键修改点5：全站统一的巨型字号 --- */
+        font-size: 3.2rem !important; /* 这个字号和你的数字输入框 CSS 完全一样 */
+        font-weight: 400 !important;   /* 和数字一样用常规粗细，不用加粗 */
         color: #333 !important;
-        margin-left: 8px !important;
-        white-space: nowrap !important; /* 强制不换行 */
+        margin-left: 12px !important;  /* 增加文字到🔘小圆点的间距 */
+        white-space: nowrap !important; /* 强制不换行 (维持不变) */
     }
-
     /* === 按钮 === */
     div.stButton > button {
         font-family: 'Arial', sans-serif !important; font-size: 3.2rem !important; font-weight: 600 !important; 
@@ -341,5 +345,6 @@ if st.session_state['prediction_result'] is not None:
         </div>
     </div>
     """, unsafe_allow_html=True)
+
 
 
