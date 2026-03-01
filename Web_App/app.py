@@ -69,7 +69,7 @@ st.markdown("""
         filter: drop-shadow(3px 3px 5px rgba(38, 85, 123, 0.2));
     }
 
-    /* === 输入框与标签 (包含了 Radio 的居中大标题) === */
+    /* === 输入框与标签 (增加了对 Radio 标题的适配) === */
     .stSelectbox label, .stNumberInput label, .stRadio > label {
         display: flex !important; justify-content: center !important; align-items: center !important; width: 100% !important; margin-bottom: 12px !important;
     }
@@ -90,11 +90,11 @@ st.markdown("""
     div[data-testid="stNumberInput"] button { display: none !important; }
     input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 
-    /* === 单选框 (Radio) 全横向卡片化样式 === */
+    /* === 单选框 (Radio) 卡片化样式 === */
     div[role="radiogroup"] {
         height: 100px !important; min-height: 100px !important; border-radius: 15px !important; background-color: white !important;
         box-shadow: 0 8px 16px rgba(0,0,0,0.08) !important; border: 2px solid #e0e0e0 !important; transition: all 0.3s !important;
-        display: flex !important; align-items: center !important; justify-content: space-evenly !important; padding: 0 20px !important;
+        display: flex !important; align-items: center !important; justify-content: space-evenly !important; padding: 0 10px !important;
     }
     div[role="radiogroup"]:hover {
         border-color: #4b6cb7 !important; box-shadow: 0 12px 24px rgba(75, 108, 183, 0.2) !important;
@@ -103,10 +103,10 @@ st.markdown("""
         cursor: pointer !important; margin: 0 !important;
     }
     div[role="radiogroup"] label p {
-        font-size: 2.4rem !important; /* 字体放大，撑满全屏的横向空间 */
+        font-size: 1.8rem !important; /* 字体稍微缩放以并排容纳3个选项 */
         font-weight: 600 !important;
         color: #333 !important;
-        margin-left: 12px !important;
+        margin-left: 8px !important;
     }
 
     /* === 按钮 === */
@@ -164,4 +164,149 @@ except Exception as e:
 
 # --- 加载凹凸棒石 (Attapulgite) 迁移组件 ---
 try:
-    models
+    models['pl_knn'] = joblib.load(os.path.join(MODEL_DIR, "transfer_knn_pl.pkl"))
+    models['pl_scaler_y_base'] = joblib.load(os.path.join(MODEL_DIR, "scaler_y_base_pl.pkl"))
+    models['pl_scaler_y_target'] = joblib.load(os.path.join(MODEL_DIR, "scaler_y_target_pl.pkl"))
+except Exception as e:
+    st.sidebar.warning(f"⚠️ Attapulgite 迁移模型未加载: {e}")
+
+# ==================== 5. 界面布局 ====================
+logo_path = "Web_App/images.png"
+col_left, col_center, col_right = st.columns([1, 4, 1])
+
+with col_left:
+    if os.path.exists(logo_path):
+        st.image(logo_path, width=230)
+
+with col_center:
+    st.markdown('<div class="main-title">Porous Nano SiO₂ SSA Prediction</div>', unsafe_allow_html=True)
+
+st.write("")
+
+# --- 输入区 ---
+r1_c1, r1_c2 = st.columns(2, gap="large")
+with r1_c1:
+    clay_options = ["Montmorillonite", "Black Talc", "Attapulgite"]
+    # 【核心修改点】：将 selectbox 替换为横向排布的 radio 单选按钮
+    clay_type = st.radio("Clay Mineral Type", clay_options, horizontal=True)
+with r1_c2:
+    particle_size = st.number_input("Particle Size (μm)", value=3.0, step=1.0, format="%.2f")
+
+st.markdown("<br>", unsafe_allow_html=True)
+
+op_c1, op_c2, op_c3 = st.columns(3, gap="large")
+with op_c1:
+    temp = st.number_input("Temperature (°C)", value=30.0, step=1.0, format="%.0f")
+with op_c2:
+    sl_ratio = st.number_input("S/L Ratio (g/mL)", value=20.0, step=1.0, format="%.0f")
+with op_c3:
+    time_val = st.number_input("Reaction Time (h)", value=5.0, step=0.5, format="%.2f")
+
+st.markdown("<br>", unsafe_allow_html=True)
+
+rm_c1, rm_c2, rm_c3 = st.columns([1, 4, 1])
+with rm_c2:
+    acid_conc = st.number_input("Acid Conc. (M)", value=2.0, step=0.1, format="%.2f")
+
+# ==================== 6. 核心预测逻辑 ====================
+st.markdown("<br>", unsafe_allow_html=True)
+b_left, b_center, b_right = st.columns([5, 2, 5])
+
+if 'prediction_result' not in st.session_state:
+    st.session_state['prediction_result'] = None
+if 'model_source' not in st.session_state:
+    st.session_state['model_source'] = ""
+
+with b_center:
+    predict_btn = st.button("SSA 🚀", use_container_width=True)
+
+if predict_btn:
+    if models['base'] is None or models['cols'] is None:
+        st.error("❌ 基准模型未正确加载，无法进行预测。")
+    else:
+        with st.spinner("Calculating via Transfer Learning..."):
+            time.sleep(0.3)
+
+            data = {
+                'SL_Ratio_Num': sl_ratio,
+                'Feature1': acid_conc,
+                'Feature3': temp,
+                'Feature4': time_val,
+                'Feature5': particle_size
+            }
+            input_df = pd.DataFrame(data, index=[0])
+            input_df = input_df[models['cols']]
+
+            try:
+                base_pred_raw = models['base'].predict(input_df)[0]
+                final_val = 0.0
+                source_msg = ""
+
+                # --- 迁移逻辑 ---
+                if clay_type == "Black Talc" and models['bt_knn'] is not None:
+                    knn = models['bt_knn']
+                    scaler_base = models['bt_scaler_y_base']
+                    scaler_target = models['bt_scaler_y_target']
+                    weight = config.get("BASE_MODEL_WEIGHT_BT", 1.0)
+
+                    base_scaled = scaler_base.transform([[base_pred_raw]])[0][0] * weight
+                    x_scaled = models['preprocessor_x'].transform(input_df)
+                    res_scaled = knn.predict(x_scaled)[0]
+
+                    final_scaled = base_scaled + res_scaled
+                    final_val = scaler_target.inverse_transform([[final_scaled]])[0][0]
+                    source_msg = "Transfer Learning: KNN Residual Correction (BT)"
+
+                elif clay_type == "Attapulgite" and models['pl_knn'] is not None:
+                    knn = models['pl_knn']
+                    scaler_base = models['pl_scaler_y_base']
+                    scaler_target = models['pl_scaler_y_target']
+                    weight = config.get("BASE_MODEL_WEIGHT_PL", 1.0)
+
+                    base_scaled = scaler_base.transform([[base_pred_raw]])[0][0] * weight
+                    x_scaled = models['preprocessor_x'].transform(input_df)
+                    res_scaled = knn.predict(x_scaled)[0]
+
+                    final_scaled = base_scaled + res_scaled
+                    final_val = scaler_target.inverse_transform([[final_scaled]])[0][0]
+                    source_msg = "Transfer Learning: KNN Residual Correction (PL)"
+
+                else:
+                    final_val = base_pred_raw
+                    source_msg = "Base Model: Montmorillonite (Direct)"
+
+                if final_val < 0:
+                    final_val = 0.0
+
+                st.session_state['prediction_result'] = final_val
+                st.session_state['model_source'] = source_msg
+
+            except Exception as e:
+                st.error(f"计算过程中发生错误: {e}")
+
+# ==================== 7. 结果显示 ====================
+if st.session_state['prediction_result'] is not None:
+    res = st.session_state['prediction_result']
+    src = st.session_state['model_source']
+
+    if clay_type == "Black Talc":
+        border_color = "#333333" # 黑色
+    elif clay_type == "Attapulgite":
+        border_color = "#e67e22" # 橙色
+    else:
+        border_color = "#28a745" # 绿色
+
+    st.markdown(f"""
+    <div class="result-container">
+        <div class="result-box">
+            <div class="res-label">Predicted SSA</div>
+            <div class="res-val">{res:.1f}</div>
+            <div class="res-unit">m²/g</div>
+        </div>
+        <div class="result-box" style="border-top-color:{border_color};">
+             <div class="res-label">Mineral Strategy</div>
+             <div class="res-val" style="color:{border_color}; font-size:3.5rem; margin-top:20px;">{clay_type}</div>
+             <div class="res-unit" style="font-size:1.2rem; color:#666;">{src}</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
