@@ -90,29 +90,48 @@ st.markdown("""
     div[data-testid="stNumberInput"] button { display: none !important; }
     input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 
-    /* === 🚀 单选框 (Radio) 终极宽度修复 (强制打破 Streamlit 的限制) === */
-    .stRadio {
-        width: 100% !important; /* 强制外层节点 100% */
-    }
+    /* ====== 🚀 单选框 (Radio) 终极暴力破解 ====== */
+    
+    /* 1. 砸碎隐形墙：强制最外层横向拉伸 */
     div[data-testid="stRadio"] {
-        width: 100% !important; /* 强制数据层节点 100% */
-        display: block !important;
+        width: 100% !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important; /* 👈 最关键的一句！强制内容填满宽度 */
     }
+    
+    /* 2. 强制包裹层 100% */
+    div[data-testid="stRadio"] > div {
+        width: 100% !important;
+        min-width: 100% !important;
+        display: flex !important;
+    }
+
+    /* 3. 白框本体彻底撑满 */
     div[role="radiogroup"] {
-        width: 100% !important; /* 强制白框本身 100% */
-        height: 100px !important; min-height: 100px !important; border-radius: 15px !important; background-color: white !important;
-        box-shadow: 0 8px 16px rgba(0,0,0,0.08) !important; border: 2px solid #e0e0e0 !important; transition: all 0.3s !important;
-        display: flex !important; align-items: center !important; justify-content: space-evenly !important; 
-        padding: 0 5px !important; 
+        width: 100% !important; 
+        min-width: 100% !important;
+        height: 100px !important; min-height: 100px !important; 
+        border-radius: 15px !important; background-color: white !important;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.08) !important; 
+        border: 2px solid #e0e0e0 !important; transition: all 0.3s !important;
+        display: flex !important; align-items: center !important; 
+        justify-content: space-between !important; 
+        padding: 0 10px !important; 
+        box-sizing: border-box !important; /* 确保 padding 不会撑破宽度 */
     }
     div[role="radiogroup"]:hover {
         border-color: #4b6cb7 !important; box-shadow: 0 12px 24px rgba(75, 108, 183, 0.2) !important;
     }
+    
+    /* 4. 让内部三个选项公平瓜分空间 */
     div[role="radiogroup"] label {
-        cursor: pointer !important; margin: 0 !important; flex: 1 !important; display: flex !important; justify-content: center !important;
+        cursor: pointer !important; margin: 0 !important; 
+        flex: 1 1 0% !important; /* 强制三个选项等宽 */
+        display: flex !important; justify-content: center !important; align-items: center !important;
     }
     div[role="radiogroup"] label p {
-        font-size: 1.6rem !important; /* 维持能放进半个屏幕的字体大小 */
+        font-size: 1.5rem !important; /* 微调字体以完美适配 */
         font-weight: 600 !important;
         color: #333 !important;
         margin-left: 5px !important;
