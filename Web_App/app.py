@@ -2,17 +2,17 @@ import streamlit as st
 import pandas as pd
 import time
 import base64
-import joblib  # 👈 核心库
+import joblib  
 import os
 import numpy as np
 import json
+
 # ==================== 1. 页面配置 ====================
 st.set_page_config(
     page_title="SiO₂ SSA Prediction",
     page_icon="⚗️",
     layout="wide"
 )
-
 
 # ==================== 2. 背景图设置 ====================
 def set_bg_local(image_file):
@@ -34,14 +34,13 @@ def set_bg_local(image_file):
         unsafe_allow_html=True
     )
 
-
 bg_path = "Web_App/background.png"
 try:
     set_bg_local(bg_path)
 except FileNotFoundError:
     st.markdown('<style>.stApp {background-color: #f0f2f6;}</style>', unsafe_allow_html=True)
 
-# ==================== 3. CSS 样式 (保持你的精美样式) ====================
+# ==================== 3. CSS 样式 ====================
 st.markdown("""
 <style>
     /* === 全局字体 === */
@@ -70,11 +69,11 @@ st.markdown("""
         filter: drop-shadow(3px 3px 5px rgba(38, 85, 123, 0.2));
     }
 
-    /* === 输入框与标签 === */
-    .stSelectbox label, .stNumberInput label {
+    /* === 输入框与标签 (增加了对 Radio 标题的适配) === */
+    .stSelectbox label, .stNumberInput label, .stRadio > label {
         display: flex !important; justify-content: center !important; align-items: center !important; width: 100% !important; margin-bottom: 12px !important;
     }
-    .stSelectbox label p, .stNumberInput label p {
+    .stSelectbox label p, .stNumberInput label p, .stRadio > label p {
         font-family: 'Arial', sans-serif !important; font-size: 3.0rem !important; font-weight: 400 !important; color: #000000 !important; text-align: center !important; 
     }
     div[data-testid="stNumberInput"] > div, div[data-baseweb="select"] > div {
@@ -88,12 +87,27 @@ st.markdown("""
     input[type="number"] {
         font-family: 'Arial', sans-serif !important; font-size: 3.2rem !important; font-weight: 400 !important; color: #333 !important; text-align: center !important; min-height: 100px !important; padding: 0 !important;
     }
-    div[data-testid="stSelectbox"] div[data-baseweb="select"] > div:first-child {
-         display: flex !important; justify-content: center !important; align-items: center !important;
-         font-family: 'Arial', sans-serif !important; font-size: 3.2rem !important; font-weight: 400 !important; color: #333 !important; padding-left: 0px !important;
-    }
     div[data-testid="stNumberInput"] button { display: none !important; }
     input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+
+    /* === 单选框 (Radio) 卡片化样式 === */
+    div[role="radiogroup"] {
+        height: 100px !important; min-height: 100px !important; border-radius: 15px !important; background-color: white !important;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.08) !important; border: 2px solid #e0e0e0 !important; transition: all 0.3s !important;
+        display: flex !important; align-items: center !important; justify-content: space-evenly !important; padding: 0 10px !important;
+    }
+    div[role="radiogroup"]:hover {
+        border-color: #4b6cb7 !important; box-shadow: 0 12px 24px rgba(75, 108, 183, 0.2) !important;
+    }
+    div[role="radiogroup"] label {
+        cursor: pointer !important; margin: 0 !important;
+    }
+    div[role="radiogroup"] label p {
+        font-size: 1.8rem !important; /* 字体稍微缩放以并排容纳3个选项 */
+        font-weight: 600 !important;
+        color: #333 !important;
+        margin-left: 8px !important;
+    }
 
     /* === 按钮 === */
     div.stButton > button {
@@ -117,11 +131,9 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# ==================== 4. 智能加载所有模型与配置 ====================
-# 设置模型文件夹路径 (请确保路径与训练脚本输出的路径完全一致)
+# ==================== 4. 加载模型与配置 ====================
 MODEL_DIR = "Web_App"
 
-# --- A. 初始化容器 ---
 models = {
     'base': None, 'preprocessor_x': None, 'cols': None,
     'bt_knn': None, 'bt_scaler_y_base': None, 'bt_scaler_y_target': None,
@@ -129,48 +141,42 @@ models = {
 }
 config = {"BASE_MODEL_WEIGHT_BT": 1.0, "BASE_MODEL_WEIGHT_PL": 1.0}
 
-# --- B. 加载配置文件 ---
 path_config = os.path.join(MODEL_DIR, "transfer_config.json")
-try:
-    if os.path.exists(path_config):
-        with open(path_config, 'r', encoding='utf-8') as f:
-            config.update(json.load(f))
-except Exception as e:
-    st.warning(f"⚠️ 无法加载配置文件，使用默认权重 1.0 ({e})")
+if os.path.exists(path_config):
+    with open(path_config, 'r', encoding='utf-8') as f:
+        config.update(json.load(f))
 
-# --- C. 加载蒙脱石基准模型 (必需) ---
+# --- 加载基准模型 ---
 try:
     models['base'] = joblib.load(os.path.join(MODEL_DIR, "best_ssa_model_base.pkl"))
     models['cols'] = joblib.load(os.path.join(MODEL_DIR, "model_columns.pkl"))
     models['preprocessor_x'] = joblib.load(os.path.join(MODEL_DIR, "preprocessor_x_global.pkl"))
 except Exception as e:
-    st.error(f"❌ 基准模型加载失败，预测功能不可用！原因: {e}")
+    st.error(f"❌ 基准模型加载失败！原因: {e}")
 
-# --- D. 加载黑滑石 (Black Talc) 迁移组件 ---
+# --- 加载黑滑石 (Black Talc) 迁移组件 ---
 try:
     models['bt_knn'] = joblib.load(os.path.join(MODEL_DIR, "transfer_knn_bt.pkl"))
     models['bt_scaler_y_base'] = joblib.load(os.path.join(MODEL_DIR, "scaler_y_base_bt.pkl"))
     models['bt_scaler_y_target'] = joblib.load(os.path.join(MODEL_DIR, "scaler_y_target_bt.pkl"))
-except Exception:
-    pass # 界面上不报错，只在后台静默处理
+except Exception as e:
+    st.sidebar.warning(f"⚠️ Black Talc 迁移模型未加载: {e}")
 
-# --- E. 加载坡缕石/凹凸棒石 (Attapulgite/Palygorskite) 迁移组件 ---
+# --- 加载凹凸棒石 (Attapulgite) 迁移组件 ---
 try:
     models['pl_knn'] = joblib.load(os.path.join(MODEL_DIR, "transfer_knn_pl.pkl"))
     models['pl_scaler_y_base'] = joblib.load(os.path.join(MODEL_DIR, "scaler_y_base_pl.pkl"))
     models['pl_scaler_y_target'] = joblib.load(os.path.join(MODEL_DIR, "scaler_y_target_pl.pkl"))
-except Exception:
-    pass
+except Exception as e:
+    st.sidebar.warning(f"⚠️ Attapulgite 迁移模型未加载: {e}")
+
 # ==================== 5. 界面布局 ====================
 logo_path = "Web_App/images.png"
 col_left, col_center, col_right = st.columns([1, 4, 1])
 
 with col_left:
-    try:
-        if os.path.exists(logo_path):
-            st.image(logo_path, width=230)
-    except:
-        pass
+    if os.path.exists(logo_path):
+        st.image(logo_path, width=230)
 
 with col_center:
     st.markdown('<div class="main-title">Porous Nano SiO₂ SSA Prediction</div>', unsafe_allow_html=True)
@@ -180,8 +186,9 @@ st.write("")
 # --- 输入区 ---
 r1_c1, r1_c2 = st.columns(2, gap="large")
 with r1_c1:
-    clay_options = ["Montmorillonite", "Black Talc", "Sepiolite", "Kaolinite", "Attapulgite"]
-    clay_type = st.selectbox("Clay Mineral Type", clay_options)
+    clay_options = ["Montmorillonite", "Black Talc", "Attapulgite"]
+    # 【核心修改点】：将 selectbox 替换为横向排布的 radio 单选按钮
+    clay_type = st.radio("Clay Mineral Type", clay_options, horizontal=True)
 with r1_c2:
     particle_size = st.number_input("Particle Size (μm)", value=3.0, step=1.0, format="%.2f")
 
@@ -201,7 +208,7 @@ rm_c1, rm_c2, rm_c3 = st.columns([1, 4, 1])
 with rm_c2:
     acid_conc = st.number_input("Acid Conc. (M)", value=2.0, step=0.1, format="%.2f")
 
-# ==================== 6. 核心预测逻辑 (含双重归一化与反演) ====================
+# ==================== 6. 核心预测逻辑 ====================
 st.markdown("<br>", unsafe_allow_html=True)
 b_left, b_center, b_right = st.columns([5, 2, 5])
 
@@ -220,8 +227,6 @@ if predict_btn:
         with st.spinner("Calculating via Transfer Learning..."):
             time.sleep(0.3)
 
-            # 1. 构造输入数据 (使用字典确保映射安全)
-            # 注意：键名必须与之前训练时的列名一致！
             data = {
                 'SL_Ratio_Num': sl_ratio,
                 'Feature1': acid_conc,
@@ -230,48 +235,28 @@ if predict_btn:
                 'Feature5': particle_size
             }
             input_df = pd.DataFrame(data, index=[0])
-
-            # 2. 强制按照模型训练时的特征顺序重排行
-            # 这一步极其重要，防止因为列顺序错乱导致预测出离谱的值
-            try:
-                input_df = input_df[models['cols']]
-            except KeyError as e:
-                st.error(f"❌ 输入特征与模型所需的特征不匹配: {e}")
-                st.stop()
+            input_df = input_df[models['cols']]
 
             try:
-                # --- 3. 第一步：获取基准模型的原始预测值 ---
                 base_pred_raw = models['base'].predict(input_df)[0]
-
                 final_val = 0.0
                 source_msg = ""
 
-                # --- 4. 分支逻辑 ---
-                # 情况 A: 黑滑石 (Black Talc)
+                # --- 迁移逻辑 ---
                 if clay_type == "Black Talc" and models['bt_knn'] is not None:
-                    # 获取专用组件
                     knn = models['bt_knn']
                     scaler_base = models['bt_scaler_y_base']
                     scaler_target = models['bt_scaler_y_target']
                     weight = config.get("BASE_MODEL_WEIGHT_BT", 1.0)
 
-                    # 归一化基础预测值，并乘以权重
-                    # 注意：sklearn 的 transform 要求 2D 数组，所以用 [[ ]]
                     base_scaled = scaler_base.transform([[base_pred_raw]])[0][0] * weight
-
-                    # 获取标准化的输入特征
                     x_scaled = models['preprocessor_x'].transform(input_df)
-
-                    # 预测归一化的残差
                     res_scaled = knn.predict(x_scaled)[0]
 
-                    # 组合后反归一化 (还原为真实 SSA 范围)
                     final_scaled = base_scaled + res_scaled
                     final_val = scaler_target.inverse_transform([[final_scaled]])[0][0]
-
                     source_msg = "Transfer Learning: KNN Residual Correction (BT)"
 
-                # 情况 B: 坡缕石/凹凸棒石 (Attapulgite/Palygorskite)
                 elif clay_type == "Attapulgite" and models['pl_knn'] is not None:
                     knn = models['pl_knn']
                     scaler_base = models['pl_scaler_y_base']
@@ -284,40 +269,32 @@ if predict_btn:
 
                     final_scaled = base_scaled + res_scaled
                     final_val = scaler_target.inverse_transform([[final_scaled]])[0][0]
-
                     source_msg = "Transfer Learning: KNN Residual Correction (PL)"
 
-                # 情况 C: 蒙脱石 (或选了黑滑石/坡缕石但找不到迁移文件)
                 else:
                     final_val = base_pred_raw
-                    if clay_type in ["Black Talc", "Attapulgite"]:
-                        source_msg = f"Warning: {clay_type} transfer files missing. Using Base MMT Model."
-                    elif clay_type != "Montmorillonite":
-                        source_msg = f"Warning: No transfer model for {clay_type}. Using Base MMT Model."
-                    else:
-                        source_msg = "Base Model: Montmorillonite (Direct)"
+                    source_msg = "Base Model: Montmorillonite (Direct)"
 
-                # 5. 防越界处理 (物理约束：SSA 不可能小于 0)
                 if final_val < 0:
                     final_val = 0.0
 
-                # 6. 存储结果渲染
                 st.session_state['prediction_result'] = final_val
                 st.session_state['model_source'] = source_msg
 
             except Exception as e:
                 st.error(f"计算过程中发生错误: {e}")
-                import traceback
-
-                st.error(traceback.format_exc())
 
 # ==================== 7. 结果显示 ====================
 if st.session_state['prediction_result'] is not None:
     res = st.session_state['prediction_result']
     src = st.session_state['model_source']
 
-    # 动态改变边框颜色 (黑滑石用深灰色，蒙脱石用绿色)
-    border_color = "#333333" if clay_type == "Black Talc" else "#28a745"
+    if clay_type == "Black Talc":
+        border_color = "#333333" # 黑色
+    elif clay_type == "Attapulgite":
+        border_color = "#e67e22" # 橙色
+    else:
+        border_color = "#28a745" # 绿色
 
     st.markdown(f"""
     <div class="result-container">
@@ -332,5 +309,4 @@ if st.session_state['prediction_result'] is not None:
              <div class="res-unit" style="font-size:1.2rem; color:#666;">{src}</div>
         </div>
     </div>
-
     """, unsafe_allow_html=True)
