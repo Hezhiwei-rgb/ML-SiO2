@@ -89,24 +89,65 @@ st.markdown("""
     }
     div[data-testid="stNumberInput"] button { display: none !important; }
     input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-
-/* ====== 🚀 降维打击版：强行撕裂 Streamlit 的外层限制 ====== */
+/* ====== 🚀 底层爆破版：彻底禁用 Streamlit 默认宽度，强制绘制白框 ====== */
     
-   
-
-    /* 5. 放大单选小圆圈 */
-    div[role="radiogroup"] > label > div:first-child {
-        transform: scale(1.3) !important; 
-        margin-right: 8px !important; 
+    /* 1. 彻底摧毁 stRadio 最外层容器的宽度锁 */
+    div[data-testid="stRadio"] {
+        width: 100% !important;
+        min-width: 100% !important;
+        max-width: 100% !important;
     }
 
-    /* 6. 字体大小适中，防挤爆 */
-    div[role="radiogroup"] > label p {
-        font-size: 2.0rem !important; /* 适中的字号 */
+    /* 2. 精准定位：强制给装选项的第二个 div 穿上白色外衣，并拉满宽度 */
+    /* 使用 nth-child(2) 是为了跳过标题，直接命中装按钮的那个隐形盒子 */
+    div[data-testid="stRadio"] > div:nth-child(2),
+    div[data-testid="stRadio"] div[role="radiogroup"] {
+        width: 100% !important;
+        min-width: 100% !important; /* 强制最小宽度也是 100% */
+        height: 100px !important; /* 强制等高 */
+        background-color: white !important; /* 找回白色的背景 */
+        border-radius: 15px !important;
+        border: 2px solid #e0e0e0 !important;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.08) !important;
+        
+        /* 内部排版 */
+        display: flex !important;
+        flex-direction: row !important; /* 强行横排 */
+        align-items: center !important;
+        justify-content: space-evenly !important; /* 均匀分布 */
+        padding: 0 15px !important;
+        box-sizing: border-box !important;
+    }
+
+    /* 鼠标悬停变蓝 */
+    div[data-testid="stRadio"] > div:nth-child(2):hover {
+        border-color: #4b6cb7 !important; 
+        box-shadow: 0 12px 24px rgba(75, 108, 183, 0.2) !important;
+    }
+
+    /* 3. 强制均分：精准定位到底层的 baseweb radio 标签 */
+    label[data-baseweb="radio"] {
+        flex: 1 1 0px !important; /* 强行三等分地盘 */
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: transparent !important;
+    }
+
+    /* 4. 调整文字和圆圈 */
+    label[data-baseweb="radio"] div {
+        font-size: 2.0rem !important; /* 适中的大字号 */
         font-weight: 500 !important;
         color: #333 !important;
-        white-space: nowrap !important; /* 强行不换行 */
-        margin: 0 !important;
+        white-space: nowrap !important; /* 绝对不准换行 */
+    }
+
+    /* 稍微放大前面的小圆圈，匹配大字号 */
+    label[data-baseweb="radio"] > div:first-child {
+        transform: scale(1.3) !important;
+        margin-right: 8px !important;
     }
     /* === 按钮 === */
     div.stButton > button {
@@ -309,6 +350,7 @@ if st.session_state['prediction_result'] is not None:
         </div>
     </div>
     """, unsafe_allow_html=True)
+
 
 
 
