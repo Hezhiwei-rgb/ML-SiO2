@@ -90,30 +90,38 @@ st.markdown("""
     div[data-testid="stNumberInput"] button { display: none !important; }
     input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 
- /* ====== 🚀 终极版：单选框 (Radio) 完美等宽与防挤压排版 ====== */
-    /* 1. 彻底解除包裹 stRadio 的所有父级宽度限制，强行撑满 */
-    div[data-testid="stRadio"], 
-    div[data-testid="stRadio"] > div {
+/* ====== 🚀 降维打击版：强行撕裂 Streamlit 的外层限制 ====== */
+    
+    /* 1. 掐住最外层脖子，强制其内部元素拉伸填满 */
+    div[data-testid="stRadio"] {
         width: 100% !important;
-        min-width: 100% !important; /* 关键：强制最小宽度为 100% */
-        max-width: 100% !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important; /* 核心魔法：强制里面的东西拉伸到和列一样宽 */
     }
 
-    /* 2. 目标实体：白色背景框 (Card UI) */
+    /* 2. 中间可能存在的隐形包裹层，统统解除限制 */
+    div[data-testid="stRadio"] > div {
+        width: 100% !important;
+        max-width: 100% !important;
+        display: block !important;
+    }
+
+    /* 3. 目标实体：白色背景卡片 */
     div[role="radiogroup"] {
-        width: 1000px !important; 
-        min-width: 100% !important; 
-        height: 100px !important; /* 强制与右侧数字输入框等高 */
+        width: 100% !important; 
+        height: 100px !important; /* 与右侧输入框等高 */
         border-radius: 15px !important; 
         background-color: white !important;
         box-shadow: 0 8px 16px rgba(0,0,0,0.08) !important; 
         border: 2px solid #e0e0e0 !important; 
+        
+        /* 内部排版 */
         display: flex !important; 
         flex-direction: row !important;
         align-items: center !important; 
-        justify-content: space-between !important; /* 让三个选项均匀散开 */
+        justify-content: space-between !important; 
         padding: 0 15px !important; 
-        gap: 5px !important;
         box-sizing: border-box !important;
     }
     
@@ -122,30 +130,28 @@ st.markdown("""
         box-shadow: 0 12px 24px rgba(75, 108, 183, 0.2) !important;
     }
 
-    /* 3. 内部选项 (label) 强制等分地盘 */
+    /* 4. 内部选项均分地盘 */
     div[role="radiogroup"] > label {
-        flex: 1 !important; /* 核心：不管字多长，三个选项的领地绝对平分 */
+        flex: 1 !important; /* 绝对平分 */
         display: flex !important; 
         justify-content: center !important; 
         align-items: center !important;
-        height: 100% !important;
         margin: 0 !important; 
         padding: 0 !important;
-        background: transparent !important;
     }
 
-    /* 4. 调整单选小圆点的大小和位置 */
+    /* 5. 放大单选小圆圈 */
     div[role="radiogroup"] > label > div:first-child {
-        transform: scale(1.4) !important; /* 把前面的小圆点放大 1.4 倍，配得上大字 */
-        margin-right: 8px !important; /* 稍微推开一点文字 */
+        transform: scale(1.3) !important; 
+        margin-right: 8px !important; 
     }
 
-    /* 5. 调整文字排版：适中的巨型字体 */
+    /* 6. 字体大小适中，防挤爆 */
     div[role="radiogroup"] > label p {
-        font-size: 2.1rem !important; /* 从 3.2 降到 2.1，既大方又不会撑爆换行 */
+        font-size: 2.0rem !important; /* 适中的字号 */
         font-weight: 500 !important;
         color: #333 !important;
-        white-space: nowrap !important; /* 强制不换行 */
+        white-space: nowrap !important; /* 强行不换行 */
         margin: 0 !important;
     }
     /* === 按钮 === */
@@ -349,6 +355,7 @@ if st.session_state['prediction_result'] is not None:
         </div>
     </div>
     """, unsafe_allow_html=True)
+
 
 
 
