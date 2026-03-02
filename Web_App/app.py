@@ -36,7 +36,7 @@ def set_bg_local(image_file):
     )
 
 
-bg_path = "background.png"
+bg_path = "Web_App/background.png"
 try:
     set_bg_local(bg_path)
 except FileNotFoundError:
@@ -390,5 +390,6 @@ if st.session_state['prediction_result'] is not None:
         </div>
     </div>
     """, unsafe_allow_html=True)
+
 
 
