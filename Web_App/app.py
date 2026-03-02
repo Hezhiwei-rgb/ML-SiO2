@@ -76,7 +76,7 @@ st.markdown("""
         display: flex !important; justify-content: center !important; align-items: center !important; width: 100% !important; margin-bottom: 8px !important;
     }
     .stSelectbox label p, .stNumberInput label p, .stRadio > label p {
-        font-family: 'Arial', sans-serif !important; font-size: 3.5rem !important; font-weight: 400 !important; color: #000000 !important; text-align: center !important; 
+        font-family: 'Arial', sans-serif !important; font-size: 3.2rem !important; font-weight: 400 !important; color: #000000 !important; text-align: center !important; 
     }
 /* === 专属修复：矿物类型标题强制居中 === */
     div[data-testid="stRadio"] > label {
@@ -88,7 +88,7 @@ st.markdown("""
     }
     div[data-testid="stRadio"] > label p {
         font-family: 'Arial', sans-serif !important; 
-        font-size: 3.5rem !important; 
+        font-size: 3.2rem !important; 
         font-weight: 400 !important; 
         color: #000000 !important; 
         text-align: center !important; 
@@ -177,7 +177,7 @@ st.markdown("""
         color: #ffffff !important; background-color: #003366 !important; border: none !important; border-radius: 15px !important;
         box-shadow: 0 5px 15px rgba(0, 51, 102, 0.3) !important; transition: all 0.2s ease-in-out !important;
     }
-    div.stButton > button p { font-size: 3.5rem !important; font-weight: 600 !important; }
+    div.stButton > button p { font-size: 3.2rem !important; font-weight: 600 !important; }
     div.stButton > button:hover { background-color: #002244 !important; transform: translateY(-2px) !important; }
     div.stButton > button:active { background-color: #001122 !important; transform: translateY(2px) !important; }
 
@@ -390,6 +390,7 @@ if st.session_state['prediction_result'] is not None:
         </div>
     </div>
     """, unsafe_allow_html=True)
+
 
 
 
