@@ -76,7 +76,7 @@ st.markdown("""
         display: flex !important; justify-content: center !important; align-items: center !important; width: 100% !important; margin-bottom: 8px !important;
     }
     .stSelectbox label p, .stNumberInput label p, .stRadio > label p {
-        font-family: 'Arial', sans-serif !important; font-size: 2.8rem !important; font-weight: 600 !important; color: #000000 !important; text-align: center !important; 
+        font-family: 'Arial', sans-serif !important; font-size: 2.8rem !important; font-weight: 400 !important; color: #000000 !important; text-align: center !important; 
     }
 /* === 专属修复：矿物类型标题强制居中 === */
     div[data-testid="stRadio"] > label {
@@ -89,7 +89,7 @@ st.markdown("""
     div[data-testid="stRadio"] > label p {
         font-family: 'Arial', sans-serif !important; 
         font-size: 2.4rem !important; 
-        font-weight: 600 !important; 
+        font-weight: 400 !important; 
         color: #000000 !important; 
         text-align: center !important; 
         width: 100% !important;
@@ -390,6 +390,7 @@ if st.session_state['prediction_result'] is not None:
         </div>
     </div>
     """, unsafe_allow_html=True)
+
 
 
 
