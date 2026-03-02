@@ -88,7 +88,7 @@ st.markdown("""
     }
     div[data-testid="stRadio"] > label p {
         font-family: 'Arial', sans-serif !important; 
-        font-size: 1.8rem !important; 
+        font-size: 2.4rem !important; 
         font-weight: 600 !important; 
         color: #000000 !important; 
         text-align: center !important; 
@@ -390,6 +390,7 @@ if st.session_state['prediction_result'] is not None:
         </div>
     </div>
     """, unsafe_allow_html=True)
+
 
 
 
