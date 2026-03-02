@@ -36,7 +36,7 @@ def set_bg_local(image_file):
     )
 
 
-bg_path = "Web_App\background.png"
+bg_path = "background.png"
 try:
     set_bg_local(bg_path)
 except FileNotFoundError:
@@ -193,7 +193,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==================== 4. 智能加载所有模型与配置 ====================
-MODEL_DIR = "Web_App"
+MODEL_DIR = "."
 
 models = {
     'base': None, 'preprocessor_x': None, 'cols': None,
@@ -232,7 +232,7 @@ except Exception:
     pass
 
 # ==================== 5. 界面布局 (修复大片留白) ====================
-logo_path = "Web_App\images.png"
+logo_path = "images.png"
 col_left, col_center, col_right = st.columns([1, 4, 1])
 
 with col_left:
@@ -390,4 +390,5 @@ if st.session_state['prediction_result'] is not None:
         </div>
     </div>
     """, unsafe_allow_html=True)
+
 
