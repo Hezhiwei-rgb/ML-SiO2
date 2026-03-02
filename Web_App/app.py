@@ -172,7 +172,7 @@ st.markdown("""
     }
     /* === 主按钮 === */
     div.stButton > button {
-        font-family: 'Arial', sans-serif !important; font-size: 2.5rem !important; font-weight: 700 !important; 
+        font-family: 'Arial', sans-serif !important; font-size: 3rem !important; font-weight: 600 !important; 
         letter-spacing: 2px !important; width: 100% !important; height: 80px !important; margin-top: 20px !important;
         color: #ffffff !important; background-color: #003366 !important; border: none !important; border-radius: 15px !important;
         box-shadow: 0 5px 15px rgba(0, 51, 102, 0.3) !important; transition: all 0.2s ease-in-out !important;
@@ -390,6 +390,7 @@ if st.session_state['prediction_result'] is not None:
         </div>
     </div>
     """, unsafe_allow_html=True)
+
 
 
 
