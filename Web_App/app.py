@@ -2,10 +2,11 @@ import streamlit as st
 import pandas as pd
 import time
 import base64
-import joblib  # 👈 核心库
+import joblib
 import os
 import numpy as np
 import json
+
 # ==================== 1. 页面配置 ====================
 st.set_page_config(
     page_title="SiO₂ SSA Prediction",
@@ -35,13 +36,13 @@ def set_bg_local(image_file):
     )
 
 
-bg_path = "background.png"
+bg_path = "Web_App\background.png"
 try:
     set_bg_local(bg_path)
 except FileNotFoundError:
     st.markdown('<style>.stApp {background-color: #f0f2f6;}</style>', unsafe_allow_html=True)
 
-# ==================== 3. CSS 样式 (保持你的精美样式) ====================
+# ==================== 3. CSS 样式 (已优化高度与换行) ====================
 st.markdown("""
 <style>
     /* === 全局字体 === */
@@ -60,68 +61,140 @@ st.markdown("""
     /* === 标题 === */
     .main-title {
         font-family: 'Arial', sans-serif !important;
-        font-size: 6rem;
+        font-size: 5rem;
         font-weight: 900;
         background: -webkit-linear-gradient(45deg, #26557B, #5080A5);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         text-align: center;
-        margin-bottom: 60px;
+        margin-bottom: 50px;
         filter: drop-shadow(3px 3px 5px rgba(38, 85, 123, 0.2));
     }
 
-    /* === 输入框与标签 === */
-    .stSelectbox label, .stNumberInput label {
-        display: flex !important; justify-content: center !important; align-items: center !important; width: 100% !important; margin-bottom: 12px !important;
+    /* === 输入框与标签 (通用设置) === */
+    .stSelectbox label, .stNumberInput label, .stRadio label {
+        display: flex !important; justify-content: center !important; align-items: center !important; width: 100% !important; margin-bottom: 8px !important;
     }
-    .stSelectbox label p, .stNumberInput label p {
-        font-family: 'Arial', sans-serif !important; font-size: 3.0rem !important; font-weight: 400 !important; color: #000000 !important; text-align: center !important; 
+    .stSelectbox label p, .stNumberInput label p, .stRadio > label p {
+        font-family: 'Arial', sans-serif !important; font-size: 1.8rem !important; font-weight: 600 !important; color: #000000 !important; text-align: center !important; 
     }
-    div[data-testid="stNumberInput"] > div, div[data-baseweb="select"] > div {
-        height: 100px !important; min-height: 100px !important; border-radius: 15px !important; background-color: white !important;
-        box-shadow: 0 8px 16px rgba(0,0,0,0.08) !important; border: 2px solid #e0e0e0 !important; transition: all 0.3s !important;
+/* === 专属修复：矿物类型标题强制居中 === */
+    div[data-testid="stRadio"] > label {
+        display: flex !important; 
+        justify-content: center !important; 
+        align-items: center !important; 
+        width: 280% !important; 
+        margin-bottom: 8px !important;
+    }
+    div[data-testid="stRadio"] > label p {
+        font-family: 'Arial', sans-serif !important; 
+        font-size: 1.8rem !important; 
+        font-weight: 600 !important; 
+        color: #000000 !important; 
+        text-align: center !important; 
+        width: 100% !important;
+    }
+    /* === 数字输入框 === */
+    div[data-testid="stNumberInput"] > div {
+        height: 60px !important; min-height: 60px !important; border-radius: 12px !important; background-color: rgba(255,255,255,0.9) !important;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.05) !important; border: 2px solid #e0e0e0 !important; transition: all 0.3s !important;
         display: flex !important; align-items: center !important; justify-content: center !important;
     }
-    div[data-testid="stNumberInput"] > div:hover, div[data-baseweb="select"] > div:hover {
-        border-color: #4b6cb7 !important; box-shadow: 0 12px 24px rgba(75, 108, 183, 0.2) !important;
+    div[data-testid="stNumberInput"] > div:hover {
+        border-color: #4b6cb7 !important; box-shadow: 0 8px 16px rgba(75, 108, 183, 0.2) !important;
     }
     input[type="number"] {
-        font-family: 'Arial', sans-serif !important; font-size: 3.2rem !important; font-weight: 400 !important; color: #333 !important; text-align: center !important; min-height: 100px !important; padding: 0 !important;
-    }
-    div[data-testid="stSelectbox"] div[data-baseweb="select"] > div:first-child {
-         display: flex !important; justify-content: center !important; align-items: center !important;
-         font-family: 'Arial', sans-serif !important; font-size: 3.2rem !important; font-weight: 400 !important; color: #333 !important; padding-left: 0px !important;
+        font-family: 'Arial', sans-serif !important; font-size: 1.8rem !important; font-weight: 400 !important; color: #333 !important; text-align: center !important; min-height: 60px !important; padding: 0 !important;
     }
     div[data-testid="stNumberInput"] button { display: none !important; }
     input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 
-    /* === 按钮 === */
+/* === 矿物选择按钮组 (完全自定义接管) === */
+    
+    /* 1. 确保最外层容器占满全宽 */
+    div[data-testid="stRadio"] {
+        width: 100% !important;
+    }
+    
+    /* 2. 把垂直排列强行掰成水平排列，并占满 100% 宽度 */
+    div[data-testid="stRadio"] div[role="radiogroup"] {
+        display: flex !important; 
+        flex-direction: row !important; /* CSS 接管水平布局 */
+        width: 250% !important;
+        gap: 100px !important;
+    }
+    
+    /* 3. 让三个按钮绝对等分空间 */
+    div[data-testid="stRadio"] div[role="radiogroup"] > label {
+        flex: 1 1 0% !important; /* 强制平分，填满空白 */
+        width: 100% !important;
+        height: 60px !important;
+        background-color: rgba(255,255,255,0.9) !important;
+        border: 2px solid #e0e0e0 !important;
+        border-radius: 12px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.05) !important;
+        cursor: pointer !important;
+        transition: all 0.3s !important;
+    }
+    
+    /* 4. 隐藏自带的丑陋圆圈 */
+    div[data-testid="stRadio"] div[role="radiogroup"] > label > div:first-of-type {
+        display: none !important;
+    }
+    
+    /* 5. 修复文本样式，绝对禁止换行 */
+    div[data-testid="stRadio"] div[role="radiogroup"] > label p {
+        margin: 0 !important;
+        font-family: 'Arial', sans-serif !important;
+        font-size: 1.6rem !important;
+        font-weight: 700 !important;
+        color: #333 !important;
+        white-space: nowrap !important; /* 保证 BTlc 不换行 */
+    }
+    
+    /* 6. 悬停与选中状态 */
+    div[data-testid="stRadio"] div[role="radiogroup"] > label:hover {
+        border-color: #4b6cb7 !important; 
+        transform: translateY(-2px) !important;
+    }
+    div[data-testid="stRadio"] div[role="radiogroup"] > label:has(input:checked) {
+        background-color: #003366 !important; 
+        border-color: #003366 !important; 
+        box-shadow: 0 5px 15px rgba(0, 51, 102, 0.4) !important;
+    }
+    div[data-testid="stRadio"] div[role="radiogroup"] > label:has(input:checked) p {
+        color: #ffffff !important;
+    }
+    /* === 主按钮 === */
     div.stButton > button {
-        font-family: 'Arial', sans-serif !important; font-size: 3.2rem !important; font-weight: 600 !important; 
-        letter-spacing: 2px !important; text-transform: uppercase !important; width: 100% !important; height: 110px !important; margin-top: 20px !important;
-        color: #ffffff !important; background-color: #003366 !important; border: none !important; border-radius: 18px !important;
+        font-family: 'Arial', sans-serif !important; font-size: 2.5rem !important; font-weight: 700 !important; 
+        letter-spacing: 2px !important; width: 100% !important; height: 80px !important; margin-top: 20px !important;
+        color: #ffffff !important; background-color: #003366 !important; border: none !important; border-radius: 15px !important;
         box-shadow: 0 5px 15px rgba(0, 51, 102, 0.3) !important; transition: all 0.2s ease-in-out !important;
     }
-    div.stButton > button p { font-size: 3.2rem !important; font-weight: 600 !important; }
+    div.stButton > button p { font-size: 2.2rem !important; font-weight: 700 !important; }
     div.stButton > button:hover { background-color: #002244 !important; transform: translateY(-2px) !important; }
     div.stButton > button:active { background-color: #001122 !important; transform: translateY(2px) !important; }
 
     /* === 结果框 === */
-    .result-container { display: flex; justify-content: center; gap: 50px; margin-top: 50px; padding-bottom: 80px; }
+    .result-container { display: flex; justify-content: center; gap: 40px; margin-top: 40px; padding-bottom: 50px; }
     .result-box {
-        background: white; border-top: 10px solid #000000; border-radius: 20px; width: 450px; padding: 40px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        background: white; border-top: 8px solid #000000; border-radius: 18px; width: 400px; padding: 30px; text-align: center; box-shadow: 0 15px 30px rgba(0,0,0,0.1);
     }
-    .res-val { font-family: 'Arial', sans-serif !important; color: #000000; font-size: 7rem; font-weight: 800; line-height: 1.1; margin: 10px 0; }
-    .res-label { font-family: 'Arial', sans-serif !important; font-size: 2.2rem; font-weight: 700; color: #000000; margin-bottom: 10px; }
-    .res-unit { font-family: 'Arial', sans-serif !important; color: #333333; font-size: 2.0rem; font-weight: 400; }
+    .res-val { font-family: 'Arial', sans-serif !important; color: #000000; font-size: 5rem; font-weight: 800; line-height: 1.1; margin: 10px 0; }
+    .res-label { font-family: 'Arial', sans-serif !important; font-size: 1.8rem; font-weight: 700; color: #000000; margin-bottom: 10px; }
+    .res-unit { font-family: 'Arial', sans-serif !important; color: #333333; font-size: 1.5rem; font-weight: 400; }
 </style>
 """, unsafe_allow_html=True)
 
 # ==================== 4. 智能加载所有模型与配置 ====================
-# 设置模型文件夹路径 (请确保路径与训练脚本输出的路径完全一致)
-MODEL_DIR = "."
+MODEL_DIR = r"E:\贺志伟的科研\实验数据集\机器学习\Code Picture"
 
-# --- A. 初始化容器 ---
 models = {
     'base': None, 'preprocessor_x': None, 'cols': None,
     'bt_knn': None, 'bt_scaler_y_base': None, 'bt_scaler_y_target': None,
@@ -129,7 +202,6 @@ models = {
 }
 config = {"BASE_MODEL_WEIGHT_BT": 1.0, "BASE_MODEL_WEIGHT_PL": 1.0}
 
-# --- B. 加载配置文件 ---
 path_config = os.path.join(MODEL_DIR, "transfer_config.json")
 try:
     if os.path.exists(path_config):
@@ -138,7 +210,6 @@ try:
 except Exception as e:
     st.warning(f"⚠️ 无法加载配置文件，使用默认权重 1.0 ({e})")
 
-# --- C. 加载蒙脱石基准模型 (必需) ---
 try:
     models['base'] = joblib.load(os.path.join(MODEL_DIR, "best_ssa_model_base.pkl"))
     models['cols'] = joblib.load(os.path.join(MODEL_DIR, "model_columns.pkl"))
@@ -146,29 +217,28 @@ try:
 except Exception as e:
     st.error(f"❌ 基准模型加载失败，预测功能不可用！原因: {e}")
 
-# --- D. 加载黑滑石 (Black Talc) 迁移组件 ---
 try:
     models['bt_knn'] = joblib.load(os.path.join(MODEL_DIR, "transfer_knn_bt.pkl"))
     models['bt_scaler_y_base'] = joblib.load(os.path.join(MODEL_DIR, "scaler_y_base_bt.pkl"))
     models['bt_scaler_y_target'] = joblib.load(os.path.join(MODEL_DIR, "scaler_y_target_bt.pkl"))
 except Exception:
-    pass # 界面上不报错，只在后台静默处理
+    pass
 
-# --- E. 加载坡缕石/凹凸棒石 (Attapulgite/Palygorskite) 迁移组件 ---
 try:
     models['pl_knn'] = joblib.load(os.path.join(MODEL_DIR, "transfer_knn_pl.pkl"))
     models['pl_scaler_y_base'] = joblib.load(os.path.join(MODEL_DIR, "scaler_y_base_pl.pkl"))
     models['pl_scaler_y_target'] = joblib.load(os.path.join(MODEL_DIR, "scaler_y_target_pl.pkl"))
 except Exception:
     pass
-# ==================== 5. 界面布局 ====================
-logo_path = "images.png"
+
+# ==================== 5. 界面布局 (修复大片留白) ====================
+logo_path = r"E:\贺志伟的科研\实验数据集\机器学习\images.png"
 col_left, col_center, col_right = st.columns([1, 4, 1])
 
 with col_left:
     try:
         if os.path.exists(logo_path):
-            st.image(logo_path, width=230)
+            st.image(logo_path, width=200)
     except:
         pass
 
@@ -177,33 +247,36 @@ with col_center:
 
 st.write("")
 
-# --- 输入区 ---
-r1_c1, r1_c2 = st.columns(2, gap="large")
+# --- 输入区 (利用空列向中心挤压，缩小两侧留白) ---
+
+# 第一行：把左右留白从 1 缩小到 0.3
+spacer1_1, r1_c1, r1_c2, spacer1_2 = st.columns([0.3, 3, 3, 0.3], gap="large")
 with r1_c1:
-    clay_options = ["Montmorillonite", "Black Talc", "Sepiolite", "Kaolinite", "Attapulgite"]
-    clay_type = st.selectbox("Clay Mineral Type", clay_options)
+    display_clay_type = st.radio("Clay Mineral Type", ["Mnt", "BTlc", "Pal"])
 with r1_c2:
-    particle_size = st.number_input("Particle Size (μm)", value=3.0, step=1.0, format="%.2f")
+    particle_size = st.number_input("Particle Size (μm)", value=3.00, step=1.0, format="%.2f")
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-op_c1, op_c2, op_c3 = st.columns(3, gap="large")
+# 第二行：同样缩小左右留白
+spacer2_1, op_c1, op_c2, op_c3, spacer2_2 = st.columns([0.3, 2, 2, 2, 0.3], gap="large")
 with op_c1:
     temp = st.number_input("Temperature (°C)", value=30.0, step=1.0, format="%.0f")
 with op_c2:
     sl_ratio = st.number_input("S/L Ratio (g/mL)", value=20.0, step=1.0, format="%.0f")
 with op_c3:
-    time_val = st.number_input("Reaction Time (h)", value=5.0, step=0.5, format="%.2f")
+    time_val = st.number_input("Reaction Time (h)", value=5.00, step=0.5, format="%.2f")
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-rm_c1, rm_c2, rm_c3 = st.columns([1, 4, 1])
+# 第三行：调整酸浓度的比例，让它稍微宽一点
+spacer3_1, rm_c2, spacer3_2 = st.columns([1.5, 4, 1.5])
 with rm_c2:
-    acid_conc = st.number_input("Acid Conc. (M)", value=2.0, step=0.1, format="%.2f")
+    acid_conc = st.number_input("Acid Conc. (M)", value=2.00, step=0.1, format="%.2f")
 
-# ==================== 6. 核心预测逻辑 (含双重归一化与反演) ====================
+# ==================== 6. 核心预测逻辑 ====================
 st.markdown("<br>", unsafe_allow_html=True)
-b_left, b_center, b_right = st.columns([5, 2, 5])
+b_left, b_center, b_right = st.columns([4, 2, 4])
 
 if 'prediction_result' not in st.session_state:
     st.session_state['prediction_result'] = None
@@ -214,14 +287,21 @@ with b_center:
     predict_btn = st.button("SSA 🚀", use_container_width=True)
 
 if predict_btn:
+
+    # 将前端显示的缩写映射回后端逻辑需要的全称
+    clay_mapping = {
+        "Mnt": "Montmorillonite",
+        "BTlc": "Black Talc",
+        "Pal": "Attapulgite"
+    }
+    clay_type = clay_mapping[display_clay_type]
+
     if models['base'] is None or models['cols'] is None:
         st.error("❌ 基准模型未正确加载，无法进行预测。")
     else:
         with st.spinner("Calculating via Transfer Learning..."):
             time.sleep(0.3)
 
-            # 1. 构造输入数据 (使用字典确保映射安全)
-            # 注意：键名必须与之前训练时的列名一致！
             data = {
                 'SL_Ratio_Num': sl_ratio,
                 'Feature1': acid_conc,
@@ -231,8 +311,6 @@ if predict_btn:
             }
             input_df = pd.DataFrame(data, index=[0])
 
-            # 2. 强制按照模型训练时的特征顺序重排行
-            # 这一步极其重要，防止因为列顺序错乱导致预测出离谱的值
             try:
                 input_df = input_df[models['cols']]
             except KeyError as e:
@@ -240,38 +318,24 @@ if predict_btn:
                 st.stop()
 
             try:
-                # --- 3. 第一步：获取基准模型的原始预测值 ---
                 base_pred_raw = models['base'].predict(input_df)[0]
-
                 final_val = 0.0
                 source_msg = ""
 
-                # --- 4. 分支逻辑 ---
-                # 情况 A: 黑滑石 (Black Talc)
                 if clay_type == "Black Talc" and models['bt_knn'] is not None:
-                    # 获取专用组件
                     knn = models['bt_knn']
                     scaler_base = models['bt_scaler_y_base']
                     scaler_target = models['bt_scaler_y_target']
                     weight = config.get("BASE_MODEL_WEIGHT_BT", 1.0)
 
-                    # 归一化基础预测值，并乘以权重
-                    # 注意：sklearn 的 transform 要求 2D 数组，所以用 [[ ]]
                     base_scaled = scaler_base.transform([[base_pred_raw]])[0][0] * weight
-
-                    # 获取标准化的输入特征
                     x_scaled = models['preprocessor_x'].transform(input_df)
-
-                    # 预测归一化的残差
                     res_scaled = knn.predict(x_scaled)[0]
 
-                    # 组合后反归一化 (还原为真实 SSA 范围)
                     final_scaled = base_scaled + res_scaled
                     final_val = scaler_target.inverse_transform([[final_scaled]])[0][0]
-
                     source_msg = "Transfer Learning: KNN Residual Correction (BT)"
 
-                # 情况 B: 坡缕石/凹凸棒石 (Attapulgite/Palygorskite)
                 elif clay_type == "Attapulgite" and models['pl_knn'] is not None:
                     knn = models['pl_knn']
                     scaler_base = models['pl_scaler_y_base']
@@ -284,24 +348,18 @@ if predict_btn:
 
                     final_scaled = base_scaled + res_scaled
                     final_val = scaler_target.inverse_transform([[final_scaled]])[0][0]
-
                     source_msg = "Transfer Learning: KNN Residual Correction (PL)"
 
-                # 情况 C: 蒙脱石 (或选了黑滑石/坡缕石但找不到迁移文件)
                 else:
                     final_val = base_pred_raw
                     if clay_type in ["Black Talc", "Attapulgite"]:
                         source_msg = f"Warning: {clay_type} transfer files missing. Using Base MMT Model."
-                    elif clay_type != "Montmorillonite":
-                        source_msg = f"Warning: No transfer model for {clay_type}. Using Base MMT Model."
                     else:
                         source_msg = "Base Model: Montmorillonite (Direct)"
 
-                # 5. 防越界处理 (物理约束：SSA 不可能小于 0)
                 if final_val < 0:
                     final_val = 0.0
 
-                # 6. 存储结果渲染
                 st.session_state['prediction_result'] = final_val
                 st.session_state['model_source'] = source_msg
 
@@ -316,8 +374,7 @@ if st.session_state['prediction_result'] is not None:
     res = st.session_state['prediction_result']
     src = st.session_state['model_source']
 
-    # 动态改变边框颜色 (黑滑石用深灰色，蒙脱石用绿色)
-    border_color = "#333333" if clay_type == "Black Talc" else "#28a745"
+    border_color = "#333333" if display_clay_type == "BTlc" else "#28a745"
 
     st.markdown(f"""
     <div class="result-container">
@@ -328,8 +385,8 @@ if st.session_state['prediction_result'] is not None:
         </div>
         <div class="result-box" style="border-top-color:{border_color};">
              <div class="res-label">Mineral Strategy</div>
-             <div class="res-val" style="color:{border_color}; font-size:3.5rem; margin-top:20px;">{clay_type}</div>
-             <div class="res-unit" style="font-size:1.2rem; color:#666;">{src}</div>
+             <div class="res-val" style="color:{border_color}; font-size:3rem; margin-top:20px;">{display_clay_type}</div>
+             <div class="res-unit" style="font-size:1.1rem; color:#666;">{src}</div>
         </div>
     </div>
     """, unsafe_allow_html=True)
