@@ -88,7 +88,7 @@ st.markdown("""
     }
     div[data-testid="stRadio"] > label p {
         font-family: 'Arial', sans-serif !important; 
-        font-size: 2.4rem !important; 
+        font-size: 2.8rem !important; 
         font-weight: 400 !important; 
         color: #000000 !important; 
         text-align: center !important; 
@@ -104,7 +104,7 @@ st.markdown("""
         border-color: #4b6cb7 !important; box-shadow: 0 8px 16px rgba(75, 108, 183, 0.2) !important;
     }
     input[type="number"] {
-        font-family: 'Arial', sans-serif !important; font-size: 1.8rem !important; font-weight: 400 !important; color: #333 !important; text-align: center !important; min-height: 60px !important; padding: 0 !important;
+        font-family: 'Arial', sans-serif !important; font-size: 2.2rem !important; font-weight: 400 !important; color: #333 !important; text-align: center !important; min-height: 60px !important; padding: 0 !important;
     }
     div[data-testid="stNumberInput"] button { display: none !important; }
     input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
@@ -151,7 +151,7 @@ st.markdown("""
     div[data-testid="stRadio"] div[role="radiogroup"] > label p {
         margin: 0 !important;
         font-family: 'Arial', sans-serif !important;
-        font-size: 2rem !important;
+        font-size: 2.2rem !important;
         font-weight: 400 !important;
         color: #333 !important;
         white-space: nowrap !important; /* 保证 BTlc 不换行 */
@@ -177,7 +177,7 @@ st.markdown("""
         color: #ffffff !important; background-color: #003366 !important; border: none !important; border-radius: 15px !important;
         box-shadow: 0 5px 15px rgba(0, 51, 102, 0.3) !important; transition: all 0.2s ease-in-out !important;
     }
-    div.stButton > button p { font-size: 2.2rem !important; font-weight: 700 !important; }
+    div.stButton > button p { font-size: 2.8rem !important; font-weight: 600 !important; }
     div.stButton > button:hover { background-color: #002244 !important; transform: translateY(-2px) !important; }
     div.stButton > button:active { background-color: #001122 !important; transform: translateY(2px) !important; }
 
@@ -390,6 +390,7 @@ if st.session_state['prediction_result'] is not None:
         </div>
     </div>
     """, unsafe_allow_html=True)
+
 
 
 
