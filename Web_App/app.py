@@ -276,7 +276,7 @@ st.markdown("<br>", unsafe_allow_html=True)
 # 第三行：调整酸浓度的比例，让它稍微宽一点
 spacer3_1, rm_c2, spacer3_2 = st.columns([1.5, 4, 1.5])
 with rm_c2:
-    acid_conc = st.number_input("Acid Conc. (M)", value=2.00, step=0.1, format="%.2f")
+    acid_conc = st.number_input("Acid Conc. (mol L$^{–1}$)", value=2.00, step=0.1, format="%.2f")
 
 # ==================== 6. 核心预测逻辑 ====================
 st.markdown("<br>", unsafe_allow_html=True)
