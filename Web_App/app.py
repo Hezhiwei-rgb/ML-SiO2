@@ -45,8 +45,12 @@ except FileNotFoundError:
 # ==================== 3. CSS 样式 (已优化高度与换行) ====================
 st.markdown("""
 <style>
-    /* === 全局字体 === */
-    html, body, [class*="css"] { font-family: 'Arial', sans-serif !important; }
+    /* === 强制全局所有元素使用 Arial === */
+    * {
+        font-family: 'Arial', sans-serif !important;
+    }
+    
+    /* 下面继续保留你原本写的那些容器、标题的样式... */
 
     /* === 容器 === */
     .main .block-container {
