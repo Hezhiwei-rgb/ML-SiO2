@@ -263,7 +263,7 @@ spacer2_1, op_c1, op_c2, op_c3, spacer2_2 = st.columns([0.3, 2, 2, 2, 0.3], gap=
 with op_c1:
     temp = st.number_input("Temperature (°C)", value=30.0, step=1.0, format="%.0f")
 with op_c2:
-    sl_ratio = st.number_input("S/L Ratio (g/mL)", value=20.0, step=1.0, format="%.0f")
+    sl_ratio = st.number_input("S/L Ratio (g mL$^{-1}$)", value=20.0, step=1.0, format="%.0f")
 with op_c3:
     time_val = st.number_input("Reaction Time (h)", value=5.00, step=0.5, format="%.2f")
 
