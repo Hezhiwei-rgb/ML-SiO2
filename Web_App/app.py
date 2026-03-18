@@ -193,7 +193,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==================== 4. 智能加载所有模型与配置 ====================
-MODEL_DIR = "Web_App"
+MODEL_DIR = ""
 
 models = {
     'base': None, 'preprocessor_x': None, 'cols': None,
